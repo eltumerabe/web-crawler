@@ -1,5 +1,6 @@
 package com.example.web;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,6 +31,10 @@ public class ServletWebCrawler extends HttpServlet implements Runnable {
      * this variable stores image count that increase dynamically
      */
     static long imageCount = 0;  // image found count , start from 0
+    /**
+     * this variable stores the final image count that increase dynamically
+     */
+    static long finalImageCount = 0;  // image found count , start from 0
     /**
      * thread runs in the background
      */
@@ -70,6 +75,7 @@ public class ServletWebCrawler extends HttpServlet implements Runnable {
      * This method contains the logic to run the web crawling program
      * parse the html and fetch the url and then find the images available
      * in that specific url and update the count parameter
+     *
      * @param url an URL to be crawled
      */
     public void getPageLinks(String url) {
@@ -99,56 +105,70 @@ public class ServletWebCrawler extends HttpServlet implements Runnable {
             }
         }
     }
+
     /**
      * Process the all get request coming to the Servlet and forward the response to
      * the giving jsp to display the result
      *
-     * @param  request  an absolute URL giving the base location of the image
-     * @param  response the location of the image, relative to the url argument
+     * @param request  an absolute URL giving the base location of the image
+     * @param response the location of the image, relative to the url argument
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
-        request.setAttribute("count", imageCount);
-        request.setAttribute("url", url);
-        rd.forward(request, response);
+        if (imageCount == finalImageCount) {
+            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
+            request.setAttribute("count", imageCount);
+            request.setAttribute("url", url);
+            request.setAttribute("msg", "Done...");
+            rd.forward(request, response);
+        } else {
+            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
+            request.setAttribute("count", imageCount);
+            request.setAttribute("url", url);
+            request.setAttribute("msg", "Still Crawling reload this <a href=\"crawler\">page</a> for final result");
+            rd.forward(request, response);
+        }
     }
+
     /**
      * Process the all post request coming to the Servlet and forward the response to
      * the giving jsp to display the result
      *
-     * @param  request  an absolute URL giving the base location of the image
-     * @param  response the location of the image, relative to the url argument
+     * @param request  an absolute URL giving the base location of the image
+     * @param response the location of the image, relative to the url argument
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.url = request.getParameter("url");
-        if (null != this.url) {
-            if (isExistUrl(this.url)) {
-                // start the Thread
-                searcher = new Thread(this);
-                searcher.setPriority(Thread.MIN_PRIORITY);  // be a good citizen
-                searcher.start();
-                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
-                request.setAttribute("count", imageCount);
-                request.setAttribute("url", url);
-                rd.forward(request, response);
+        if (null != this.url && this.url.length() != 0) {
+            if (!StringUtils.isBlank(this.url) && !StringUtils.isEmpty(this.url)) {
+                if (isExistUrl(this.url)) {
+                    // start the Thread
+                    searcher = new Thread(this);
+                    searcher.setPriority(Thread.MIN_PRIORITY);  // be a good citizen
+                    searcher.start();
+                    RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
+                    request.setAttribute("count", imageCount);
+                    request.setAttribute("url", url);
+                    rd.forward(request, response);
+                } else {
+                    RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/notfound.jsp");
+                    request.setAttribute("msg", "404, (" + this.url + ") not found");
+                    rd.forward(request, response);
+                }
             } else {
-                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/notfound.jsp");
-                request.setAttribute("msg", "404, (" + this.url + ") not found");
+                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/home.jsp");
+                request.setAttribute("msg", "Please enter the url");
                 rd.forward(request, response);
             }
-        } else {
-            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/notfound.jsp");
-            request.setAttribute("msg", "Please enter the url");
-            rd.forward(request, response);
         }
     }
+
     /**
      * Process the all get request coming to the Servlet and forward the response to
      * the giving jsp to display the result
      *
-     * @param  urlString  an  URL to be checked for existence
-     * @return      true is the url is valid, or false if the url is not valid
-     * @see         boolean
+     * @param urlString an  URL to be checked for existence
+     * @return true is the url is valid, or false if the url is not valid
+     * @see boolean
      */
     public boolean isExistUrl(String urlString) {
         try {

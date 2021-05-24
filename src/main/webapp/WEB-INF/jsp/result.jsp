@@ -19,7 +19,7 @@
         <h3> Found ${count} images!</h3>
     </div>
     <div class="row">
-        <h4> Still Crawling reload this <a href="crawler">page</a> for final result</h4>
+        <h4> ${msg}</h4>
     </div>
     <div class="row">
         <a href="home">Back to home page</a>

@@ -24,11 +24,15 @@
                     <label for="url" class="form-label">Enter Valid URL</label>
                     <input type="text" class="form-control" id="url" name="url">
                 </div>
+                <c:if test="${not empty msg}">
+                <dev>
+                    <h6 style="color: #bb2d3b">${msg}</h6>
+                </dev>
+                </c:if>
                 <button type="submit" class="btn btn-primary">Crawl</button>
             </form>
         </dev>
         <dev class="col-6">
-
         </dev>
     </div>
 </div>
