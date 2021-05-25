@@ -148,6 +148,7 @@ public class ServletWebCrawler extends HttpServlet implements Runnable {
                     RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
                     request.setAttribute("count", imageCount);
                     request.setAttribute("url", url);
+                    request.setAttribute("msg", "Still Crawling reload this <a href=\"crawler\">page</a> for final result");
                     rd.forward(request, response);
                 } else {
                     RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/notfound.jsp");
